@@ -7,7 +7,7 @@ const headers = {
     Authorization: `Bearer ${process.env.TOKEN}`
 };
 
-async function getDepots(){
+async function getDepots() {
     const response = await axios.get(
         `${BASE_URL}/depots`,
         { headers }
@@ -15,16 +15,24 @@ async function getDepots(){
     return response.data.depots;
 }
 
-async function getVehicles(){
+async function getVehicles() {
     const response = await axios.get(
         `${BASE_URL}/vehicles`,
         { headers }
     );
-
     return response.data.vehicles;
+}
+
+async function getNotifications() {
+    const response = await axios.get(
+        `${BASE_URL}/notifications`,
+        { headers }
+    );
+    return response.data.notifications;
 }
 
 module.exports = {
     getDepots,
-    getVehicles
+    getVehicles,
+    getNotifications
 };
