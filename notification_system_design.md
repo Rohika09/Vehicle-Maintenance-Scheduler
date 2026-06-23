@@ -391,3 +391,126 @@ ON Notifications(notificationType, createdAt);
 CREATE INDEX idx_notification_read
 ON Notifications(isRead);
 ```
+# Stage 4
+
+## Performance Improvements
+
+### 1. Redis Caching
+
+Use Redis to cache:
+
+* Recent notifications
+* Unread notification count
+* Frequently accessed notification feeds
+
+### Benefits
+
+* Reduces database load
+* Faster response times
+* Better user experience
+
+### Tradeoff
+
+* Additional infrastructure
+* Cache invalidation complexity
+
+---
+
+## 2. Pagination
+
+Instead of loading all notifications:
+
+```http
+GET /notifications?page=1&limit=20
+```
+
+### Benefits
+
+* Faster API responses
+* Reduced memory consumption
+* Better scalability
+
+### Tradeoff
+
+* Additional pagination logic
+
+---
+
+## 3. Infinite Scrolling
+
+Load notifications only when required.
+
+### Benefits
+
+* Better frontend performance
+* Reduced bandwidth usage
+
+### Tradeoff
+
+* More complex UI implementation
+
+---
+
+## 4. Read Replicas
+
+Use database replicas for read-heavy operations.
+
+### Benefits
+
+* Distributes database load
+* Improves scalability
+
+### Tradeoff
+
+* Replication lag may occur
+
+---
+
+## 5. Background Processing
+
+Move heavy tasks to worker services.
+
+Examples:
+
+* Email delivery
+* SMS notifications
+* Push notifications
+
+### Benefits
+
+* Faster API response times
+* Better system reliability
+
+### Tradeoff
+
+* Additional worker infrastructure
+
+---
+
+## 6. WebSocket Connections
+
+Provide real-time notifications.
+
+### Benefits
+
+* Instant updates
+* Eliminates constant polling
+
+### Tradeoff
+
+* Increased connection management complexity
+
+---
+
+## Scalability Strategy
+
+For 50,000+ students:
+
+1. PostgreSQL as primary database
+2. Redis for caching
+3. RabbitMQ/Kafka for message queues
+4. Read replicas
+5. Load balancer
+6. Multiple application servers
+
+This architecture supports high throughput while maintaining low latency.
