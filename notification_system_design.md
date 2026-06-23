@@ -300,3 +300,94 @@ ORDER BY createdAt DESC;
 3. Partition notification data by date.
 4. Cache recent notifications using Redis.
 5. Use message queues for large-scale notification delivery.
+
+# Stage 3
+
+## Query Optimization
+
+### Given Query
+
+```sql
+SELECT *
+FROM Notifications
+WHERE studentID = 1042
+AND isRead = FALSE
+ORDER BY createdAt DESC;
+```
+
+### Why Can This Become Slow?
+
+As the Notifications table grows to millions of rows:
+
+1. Full table scans become expensive.
+2. Filtering by studentID and isRead requires checking many rows.
+3. Sorting by createdAt adds extra overhead.
+4. Response time increases significantly.
+
+---
+
+## Indexing Strategy
+
+### Composite Index
+
+```sql
+CREATE INDEX idx_notifications_student_read_created
+ON Notifications(studentID, isRead, createdAt DESC);
+```
+
+### Benefits
+
+* Faster filtering by studentID.
+* Faster filtering by isRead.
+* Faster sorting by createdAt.
+* Reduces full table scans.
+
+---
+
+## Why Not Index Every Column?
+
+Indexing every column is a bad idea because:
+
+1. Increased storage usage.
+2. Slower INSERT operations.
+3. Slower UPDATE operations.
+4. Higher maintenance overhead.
+5. Many indexes may never be used.
+
+Indexes should only be created for frequently queried columns.
+
+---
+
+## Query: Students Receiving Placement Notifications In Last 7 Days
+
+```sql
+SELECT DISTINCT studentID
+FROM Notifications
+WHERE notificationType = 'Placement'
+AND createdAt >= NOW() - INTERVAL '7 days';
+```
+
+### Explanation
+
+* Filters placement notifications.
+* Considers only last 7 days.
+* DISTINCT avoids duplicate student IDs.
+* Useful for reporting and analytics.
+
+---
+
+## Additional Recommended Indexes
+
+### Placement Notification Index
+
+```sql
+CREATE INDEX idx_notification_type_created
+ON Notifications(notificationType, createdAt);
+```
+
+### Read Status Index
+
+```sql
+CREATE INDEX idx_notification_read
+ON Notifications(isRead);
+```
