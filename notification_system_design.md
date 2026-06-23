@@ -514,3 +514,129 @@ For 50,000+ students:
 6. Multiple application servers
 
 This architecture supports high throughput while maintaining low latency.
+
+
+# Stage 5
+
+## Scenario
+
+An administrator clicks:
+
+```text
+Notify All Students
+```
+
+The notification must be delivered to 50,000 students.
+
+---
+
+## Problem With Direct Processing
+
+Bad approach:
+
+```text
+Admin
+  ↓
+Application Server
+  ↓
+Send 50,000 Notifications
+```
+
+Problems:
+
+* API request may timeout
+* Server becomes overloaded
+* Poor user experience
+* Difficult to scale
+
+---
+
+## Recommended Architecture
+
+```text
+Admin
+  ↓
+API Server
+  ↓
+Message Queue (RabbitMQ / Kafka)
+  ↓
+Worker Services
+  ↓
+Email / Push / SMS Services
+  ↓
+Students
+```
+
+---
+
+## Workflow
+
+### Step 1
+
+Admin submits notification.
+
+```http
+POST /notifications/broadcast
+```
+
+### Step 2
+
+API validates request.
+
+### Step 3
+
+Notification job is added to queue.
+
+```text
+Notification Queue
+```
+
+### Step 4
+
+Workers consume queue messages.
+
+### Step 5
+
+Workers send notifications in parallel.
+
+### Step 6
+
+Delivery status stored in database.
+
+---
+
+## Why Message Queues?
+
+### Advantages
+
+* Asynchronous processing
+* Better reliability
+* Easy horizontal scaling
+* Handles traffic spikes
+* Prevents API timeouts
+
+---
+
+## Failure Handling
+
+If delivery fails:
+
+```text
+Retry Queue
+```
+
+Workers retry automatically.
+
+---
+
+## Scalability
+
+For 50,000+ users:
+
+* Multiple worker instances
+* Load balancing
+* Redis caching
+* Read replicas
+* Queue partitioning
+
+This ensures the system remains responsive even under heavy load.
