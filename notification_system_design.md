@@ -194,3 +194,109 @@ The system will use WebSockets for real-time notification delivery.
 - Low latency
 - Reduced API polling
 - Better user experience
+
+# Stage 2
+
+## Database Choice
+
+I would use PostgreSQL as the primary database because:
+
+* Supports ACID transactions
+* Handles large volumes of notification data
+* Strong indexing support
+* Reliable querying and reporting
+* Scales using read replicas and partitioning
+
+---
+
+## Database Schema
+
+### Students Table
+
+```sql
+CREATE TABLE Students (
+    studentID SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    department VARCHAR(50),
+    year INTEGER
+);
+```
+
+### Notifications Table
+
+```sql
+CREATE TABLE Notifications (
+    notificationID SERIAL PRIMARY KEY,
+    studentID INTEGER,
+    notificationType VARCHAR(50),
+    message TEXT,
+    isRead BOOLEAN DEFAULT FALSE,
+    priority INTEGER,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (studentID)
+    REFERENCES Students(studentID)
+);
+```
+
+### DeliveryLogs Table
+
+```sql
+CREATE TABLE DeliveryLogs (
+    logID SERIAL PRIMARY KEY,
+    notificationID INTEGER,
+    status VARCHAR(50),
+    deliveredAt TIMESTAMP,
+    FOREIGN KEY (notificationID)
+    REFERENCES Notifications(notificationID)
+);
+```
+
+---
+
+## Relationships
+
+Students (1) ---- (Many) Notifications
+
+Notifications (1) ---- (Many) DeliveryLogs
+
+---
+
+## Sample Queries
+
+### Get Unread Notifications
+
+```sql
+SELECT *
+FROM Notifications
+WHERE studentID = 1042
+AND isRead = FALSE
+ORDER BY createdAt DESC;
+```
+
+### Mark Notification As Read
+
+```sql
+UPDATE Notifications
+SET isRead = TRUE
+WHERE notificationID = 101;
+```
+
+### Get Placement Notifications
+
+```sql
+SELECT *
+FROM Notifications
+WHERE notificationType = 'Placement'
+ORDER BY createdAt DESC;
+```
+
+---
+
+## Scalability Considerations
+
+1. Index frequently queried columns.
+2. Use read replicas for heavy read traffic.
+3. Partition notification data by date.
+4. Cache recent notifications using Redis.
+5. Use message queues for large-scale notification delivery.
